@@ -21,9 +21,9 @@ public:
     size_t pos() const { return p_; }
     size_t remaining() const { return end_-p_; }
     uint8_t u1(){ need(1); return d_[p_++]; }
-    uint16_t u2(){ return (uint16_t(u1())<<8)|u1(); }
-    uint32_t u4(){ return (uint32_t(u2())<<16)|u2(); }
-    uint64_t u8(){ return (uint64_t(u4())<<32)|u4(); }
+    uint16_t u2(){ uint16_t hi=u1(); uint16_t lo=u1(); return uint16_t((hi<<8)|lo); }
+    uint32_t u4(){ uint32_t hi=u2(); uint32_t lo=u2(); return (hi<<16)|lo; }
+    uint64_t u8(){ uint64_t hi=u4(); uint64_t lo=u4(); return (hi<<32)|lo; }
     std::vector<uint8_t> bytes(size_t n){ need(n); std::vector<uint8_t> v(d_.begin()+p_,d_.begin()+p_+n); p_+=n; return v; }
     void skip(size_t n){ need(n); p_+=n; }
 private:
@@ -146,7 +146,7 @@ void ClassFile::parse(){
     for(uint16_t i=1;i<count;i++){CpEntry&e=cp_[i];e.tag=r.u1();switch(e.tag){case 1:{uint16_t n=r.u2();e.text=decodeModifiedUtf8(r.bytes(n));break;}
         case 3:case 4:e.bits=r.u4();break;case 5:case 6:e.wide=r.u8();if(i+1>=count)throw std::runtime_error("Long/Double sem slot de continuação");i++;break;
         case 7:case 8:case 16:e.a=r.u2();break;case 9:case 10:case 11:case 12:case 18:e.a=r.u2();e.b=r.u2();break;case 15:e.a=r.u1();e.b=r.u2();break;default:throw std::runtime_error("tag constant pool desconhecida: "+std::to_string(e.tag));}}
-    for(size_t i=1;i<cp_.size();i++){const CpEntry&e=cp_[i];auto require=[&](uint16_t x,uint8_t tag){if(!x||x>=cp_.size()||cp_[x].tag!=tag)throw std::runtime_error("referência inválida na constant pool #"+std::to_string(i));};switch(e.tag){case 7:case 8:case 16:require(e.a,1);break;case 9:case 10:case 11:require(e.a,7);require(e.b,12);break;case 12:require(e.a,1);require(e.b,1);break;case 15:if(e.a<1||e.a>9||!e.b||e.b>=cp_.size())throw std::runtime_error("MethodHandle inválido na constant pool");break;case 18:require(e.b,12);break;default:break;}}
+    for(size_t i=1;i<cp_.size();i++){const CpEntry&e=cp_[i];auto require=[&](uint16_t x,uint8_t tag){if(!x||x>=cp_.size()||cp_[x].tag!=tag)throw std::runtime_error("referência inválida na constant pool #"+std::to_string(i));};switch(e.tag){case 7:case 8:case 16:require(e.a,1);break;case 9:case 10:case 11:require(e.a,7);require(e.b,12);break;case 12:require(e.a,1);require(e.b,1);break;case 15:if(e.a<1||e.a>9||!e.b||e.b>=cp_.size()||cp_[e.b].tag<9||cp_[e.b].tag>11)throw std::runtime_error("MethodHandle inválido na constant pool");break;case 18:require(e.b,12);break;default:break;}}
     flags_=r.u2();this_=r.u2();super_=r.u2();uint16_t n=r.u2();for(uint16_t i=0;i<n;i++)interfaces_.push_back(r.u2());
     auto readMembers=[&](std::vector<Member>&v){uint16_t m=r.u2();for(uint16_t i=0;i<m;i++){Member x;x.flags=r.u2();x.nameIndex=r.u2();x.descriptorIndex=r.u2();uint16_t na=r.u2();for(uint16_t j=0;j<na;j++){Attribute a;a.nameIndex=r.u2();uint32_t len=r.u4();if(len>r.remaining())throw std::runtime_error("attribute_length excede o arquivo");a.name=utf8(a.nameIndex);a.info=r.bytes(len);x.attributes.push_back(a);}v.push_back(x);}};
     readMembers(fields_);readMembers(methods_);n=r.u2();for(uint16_t i=0;i<n;i++){Attribute a;a.nameIndex=r.u2();uint32_t len=r.u4();if(len>r.remaining())throw std::runtime_error("attribute_length excede o arquivo");a.name=utf8(a.nameIndex);a.info=r.bytes(len);attributes_.push_back(a);}if(r.remaining())throw std::runtime_error("bytes excedentes após ClassFile");

@@ -34,6 +34,25 @@ make test CXX=g++
 
 Requer C++11 e Python 3 para gerar fixtures binárias de teste. Os testes Java usam `javac`, `java` e `javap` do JDK. OpenJDK 17 compila as fixtures com `--release 8`, produzindo major version 52.
 
+## Opções de compilação
+
+Flags definidas no `Makefile`: `-std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude`. Compilador: GNU G++ (`make CXX=g++-16` no macOS com Homebrew; `make` sem `CXX` usa o `g++` do sistema, que no macOS é Apple Clang). Comando equivalente:
+
+```sh
+g++ -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp -o jvm
+```
+
+## Requisitos da entrega
+
+Envio único por grupo no Aprender, até 04/11/2026 às 10h:
+
+- Código-fonte em C/C++ compilável com GCC e as opções de compilação acima.
+- Vídeo de 5 minutos: o que foi e o que não foi implementado, como compilar e executar.
+- Slides com prints reais das estruturas exibidas pelo leitor.
+- Resumo das atividades de cada integrante (`docs/ATIVIDADES_INDIVIDUAIS.md`).
+
+Critérios de avaliação do leitor/exibidor: 70% exibição das estruturas lidas do `.class`; 30% exibição dos mnemônicos dos bytecodes.
+
 ## Execução
 
 ```sh
