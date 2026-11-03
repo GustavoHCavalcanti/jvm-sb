@@ -1,3 +1,4 @@
 /jvm
+/jvm.exe
 /build/
 /src/*.o

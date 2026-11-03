@@ -1,25 +1,38 @@
 CXX = g++
 CXXFLAGS ?= -std=c++11 -Wall -Wextra -Wpedantic -O2
 CPPFLAGS ?= -Iinclude
+LDFLAGS ?=
 SOURCES := src/main.cpp src/classfile.cpp
 OBJECTS := $(SOURCES:.cpp=.o)
 TARGET := jvm
+
+# MinGW-w64 (MSYS2 UCRT64 ou compilação cruzada): o g++ gera .exe, e -static
+# permite executá-lo fora do terminal UCRT64, sem as DLLs do GCC no PATH.
+ifneq (,$(findstring mingw,$(shell $(CXX) -dumpmachine)))
+TARGET := jvm.exe
+LDFLAGS += -static
+endif
 
 FUZZ_CXX ?= clang++
 FUZZ_TARGET := build/fuzz_classfile
 FUZZ_SEEDS := build/fuzz-corpus
 
-.PHONY: all clean test sanitize cppcheck fuzz-build fuzz-smoke
+.PHONY: all clean test exemplo sanitize cppcheck fuzz-build fuzz-smoke
 all: $(TARGET)
 $(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@
+	$(CXX) $(CXXFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
 src/%.o: src/%.cpp include/classfile.hpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) jvm jvm.exe
 	rm -rf build
 test: $(TARGET)
 	bash tests/scripts/run.sh
+exemplo: build/Exemplo.class
+build/Exemplo.class: examples/gera_exemplo.cpp
+	mkdir -p build
+	$(CXX) $(CXXFLAGS) examples/gera_exemplo.cpp $(LDFLAGS) -o build/gera_exemplo
+	build/gera_exemplo $@
 sanitize: CXXFLAGS += -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer
 sanitize: clean all
 cppcheck:

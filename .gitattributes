@@ -1,0 +1,4 @@
+# Mantém LF no Windows: com CRLF, o sh do MSYS2 não executa tests/scripts/run.sh.
+* text=auto eol=lf
+*.class binary
+*.pdf binary

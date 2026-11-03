@@ -38,13 +38,14 @@
 | Classes Java 8 reais e `javap -verbose` | **Completo para a matriz da fixture** | Compiladas com OpenJDK 17 `--release 8`; parser leu todos os `.class` produzidos. Testes comparam major version, mnemônicos e presença/resolução de pool, métodos e atributos chave com `javap`. |
 | Cobertura funcional de casos do enunciado | **Completo para a fixture de integração** | Operações, variáveis, métodos estáticos/de instância, construtor, herança, interface, arrays, strings, loops, condicionais, switch, exceções, long/double, debug, classes abstratas e múltiplos métodos estão em `tests/java/Cases.java`. |
 | Annotations, inner/local classes, lambda/invokedynamic, StackMapTable e BootstrapMethods | **Completo para a fixture de integração** | Exercitados por `tests/java/AnnotationsFixture.java` e classes geradas correspondentes. Atributos adicionais são exercitados pela fixture estrutural. |
+| Compilação e execução no Windows 10/11 (MSYS2 UCRT64) | **Pendente** | Adaptação implementada e instruções no README, mas ainda sem execução em um Windows real. |
 | Java 2/6 compilado por javac e jclasslib | **Pendente** | JDK 17 atual não gera targets Java 2/6; jclasslib não foi instalado/usado. |
 
 ## Documentação e material de entrega
 
 | Requisito | Estado | Evidência/observação |
 |---|---|---|
-| README com dependências e comandos macOS/GNU | **Completo** | [`README.md`](../README.md). |
+| README com dependências e comandos Windows/macOS/Linux | **Completo** | [`README.md`](../README.md). |
 | Roteiro de vídeo de até 5 minutos | **Completo** | [`APRESENTACAO_ENTREGA_1.md`](APRESENTACAO_ENTREGA_1.md). |
 | Slides 5–7 com capturas reais a inserir | **Completo como roteiro** | [`SLIDES_ENTREGA_1.md`](SLIDES_ENTREGA_1.md); a equipe deve capturar as telas durante a apresentação. |
 | Exemplo de saída real | **Completo** | [`EXEMPLO_REAL_EXECUCAO.txt`](EXEMPLO_REAL_EXECUCAO.txt), produzido pelo executável atual lendo classe Java 8 compilada. |
