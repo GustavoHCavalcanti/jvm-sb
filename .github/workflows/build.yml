@@ -1,0 +1,110 @@
+# Compila e testa o leitor-exibidor com GCC em Linux, macOS e Windows (MSYS2 UCRT64).
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            shell: bash
+          - os: macos-latest
+            shell: bash
+          - os: windows-latest
+            shell: msys2 {0}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar MSYS2 UCRT64 (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            make
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-python
+
+      - name: Instalar GCC do Homebrew (macOS)
+        if: runner.os == 'macOS'
+        run: brew install gcc
+
+      # CXX: compilador GNU; EXE: nome do executável; STATIC: -static só no Windows;
+      # JDK_BIN: o shell do MSYS2 não herda o PATH do Windows, então o JDK entra pelo JAVA_HOME.
+      - name: Selecionar compilador
+        run: |
+          set -e
+          case "$RUNNER_OS" in
+            Linux)   CXX=g++; EXE=jvm; STATIC= ; JDK_BIN="$JAVA_HOME/bin" ;;
+            macOS)   CXX="$(ls "$(brew --prefix gcc)"/bin/g++-* | tail -n 1)"; EXE=jvm; STATIC= ; JDK_BIN="$JAVA_HOME/bin" ;;
+            Windows) CXX=g++; EXE=jvm.exe; STATIC=-static; JDK_BIN="$(cygpath -u "$JAVA_HOME")/bin" ;;
+          esac
+          {
+            echo "CXX=$CXX"
+            echo "EXE=$EXE"
+            echo "STATIC=$STATIC"
+            echo "JDK_BIN=$JDK_BIN"
+          } >> "$GITHUB_ENV"
+          echo "Compilador: $(command -v "$CXX" || echo "$CXX")"
+          "$CXX" --version
+          "$CXX" -dumpmachine
+
+      - name: make
+        run: make CXX="$CXX" clean all
+
+      - name: make test
+        run: |
+          set -e
+          export PATH="$JDK_BIN:$PATH"
+          java -version
+          make CXX="$CXX" test > test.log 2>&1 || { cat test.log; exit 1; }
+          cat test.log
+          # Os 7 testes precisam passar; um SKIP indicaria JDK ausente.
+          test "$(grep -c '^PASS' test.log)" -eq 7
+
+      - name: make exemplo e executar
+        run: |
+          set -e
+          make CXX="$CXX" exemplo
+          ./"$EXE" --viewer build/Exemplo.class
+
+      - name: make demo
+        run: |
+          set -e
+          export PATH="$JDK_BIN:$PATH"
+          make CXX="$CXX" demo
+
+      - name: Compilar sem make (uma linha de g++)
+        run: |
+          set -e
+          "$CXX" -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp $STATIC -o "nomake-$EXE"
+          ./"nomake-$EXE" --viewer build/Exemplo.class > build/nomake.txt
+          ./"$EXE" --viewer build/Exemplo.class > build/make.txt
+          cmp build/make.txt build/nomake.txt
+          echo "Saída idêntica à do executável gerado pelo make."
+
+      # Fora do MSYS2 não há DLLs do GCC no PATH: confirma que -static basta para o professor rodar no PowerShell.
+      - name: Executar jvm.exe no PowerShell (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\jvm.exe --viewer build\Exemplo.class
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

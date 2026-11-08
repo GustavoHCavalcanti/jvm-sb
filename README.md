@@ -2,9 +2,19 @@
 
 Leitor/exibidor de arquivos `.class` implementado em C++11. A ferramenta interpreta a estrutura binária e exibe a constant pool, flags, hierarquia, interfaces, fields, methods, atributos e bytecodes. Não executa as instruções; `--interpreter` é reservado para uma etapa posterior.
 
+## Resumo rápido
+
+| Sistema | Instalar | Compilar (com make) | Compilar (sem make) | Executar |
+|---|---|---|---|---|
+| Windows 10/11 (terminal MSYS2 UCRT64) | MSYS2 + `pacman -S --needed mingw-w64-ucrt-x86_64-gcc make` | `make` | `g++ -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp -static -o jvm.exe` | `./jvm.exe --viewer arquivo.class` |
+| Linux (Debian/Ubuntu) | `sudo apt install build-essential` | `make` | `g++ -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp -o jvm` | `./jvm --viewer arquivo.class` |
+| macOS | `brew install gcc` | `make CXX=g++-16` | `g++-16 -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp -o jvm` | `./jvm --viewer arquivo.class` |
+
+Para ter um `.class` de exemplo sem JDK: `make exemplo` gera `build/Exemplo.class`. Os testes (`make test`) precisam de Python 3 e JDK 17. Versão em texto: [INSTRUCOES_COMPILACAO.txt](INSTRUCOES_COMPILACAO.txt). O workflow [.github/workflows/build.yml](.github/workflows/build.yml) compila e testa nos três sistemas a cada push.
+
 ## Compilação e execução no Windows 10/11
 
-> **Estado da validação:** estas instruções ainda não foram executadas em um Windows real; veja [Ambiente de validação usado](#ambiente-de-validação-usado).
+> **Estado da validação:** a validação em Windows é feita pelo GitHub Actions (`windows-latest`, MSYS2 UCRT64); veja [Ambiente de validação usado](#ambiente-de-validação-usado).
 
 Estratégia: **MSYS2 UCRT64**, que fornece GCC (MinGW-w64) e GNU Make. O leitor usa apenas a biblioteca padrão de C++ e a API do Windows; não depende de Java, Python, Cppcheck ou LLVM para compilar e executar.
 
@@ -227,4 +237,4 @@ No Windows, use `./jvm.exe`. O primeiro exemplo fica disponível após `make exe
 
 Na sessão de validação: GNU GCC 16.2.0 (Homebrew), OpenJDK 17.0.21.0.3 e Python 3.15.2. `make`, `make test` e a suíte com AddressSanitizer/UBSan passaram; `javac --release 8` e `javap -verbose` foram executados sem warnings da fixture.
 
-Windows 10/11: ainda não compilado nem executado em um Windows real. A adaptação foi conferida no macOS por revisão do código e simulações, que não substituem essa execução.
+Windows 10/11 e Linux: a validação é feita pelo workflow `.github/workflows/build.yml`. Em `ubuntu-latest`, `macos-latest` e `windows-latest` (MSYS2 UCRT64), ele roda `make`, `make test` (7 PASS), `make exemplo`, `make demo` e a compilação sem make. No Windows, também executa `jvm.exe` no PowerShell, fora do MSYS2. Confira o resultado mais recente na aba **Actions** do repositório.

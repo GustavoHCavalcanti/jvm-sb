@@ -2,3 +2,5 @@
 /jvm.exe
 /build/
 /src/*.o
+/demo/*.class
+.DS_Store

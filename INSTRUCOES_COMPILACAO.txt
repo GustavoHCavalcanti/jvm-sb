@@ -1,0 +1,70 @@
+LEITOR-EXIBIDOR DE .CLASS - INSTRUÇÕES DE COMPILAÇÃO E EXECUÇÃO
+=================================================================
+
+Compilador: GNU GCC (g++), C++11. Não há dependências além da biblioteca
+padrão. Make, Python 3 e JDK 17 só são necessários para "make test" e
+"make demo".
+
+
+WINDOWS 10/11 (GCC do MSYS2 UCRT64)
+-----------------------------------
+1. Instalar o MSYS2 (https://www.msys2.org), na pasta padrão C:\msys64.
+2. Abrir o terminal "MSYS2 UCRT64" (menu Iniciar) e instalar:
+     pacman -Syu
+     pacman -S --needed mingw-w64-ucrt-x86_64-gcc make
+3. Compilar, na pasta do projeto (C:\ aparece como /c):
+     cd "/c/caminho/para/jvm-sb"
+     make
+   Sem make, uma linha só:
+     g++ -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp -static -o jvm.exe
+4. Executar:
+     make exemplo
+     ./jvm.exe --viewer build/Exemplo.class
+
+   Por causa do -static, jvm.exe também roda no PowerShell ou no CMD:
+     .\jvm.exe --viewer build\Exemplo.class
+
+   Para compilar no PowerShell (sem make), antes coloque o GCC no PATH:
+     $env:Path = "C:\msys64\ucrt64\bin;$env:Path"
+
+   Testes (opcional): pacman -S --needed mingw-w64-ucrt-x86_64-python
+   e um JDK 17 instalado no Windows; depois "make test".
+
+
+LINUX (Debian/Ubuntu)
+---------------------
+1. Instalar:
+     sudo apt install build-essential
+   (para os testes: sudo apt install python3 openjdk-17-jdk)
+2. Compilar:
+     make
+   Sem make:
+     g++ -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp -o jvm
+3. Executar:
+     make exemplo
+     ./jvm --viewer build/Exemplo.class
+
+
+MACOS (GCC do Homebrew)
+-----------------------
+O "g++" do Xcode é Apple Clang; use o GCC do Homebrew (g++-<versão>,
+por exemplo g++-16).
+1. Instalar:
+     brew install gcc
+   (para os testes: brew install openjdk@17)
+2. Compilar:
+     make CXX=g++-16
+   Sem make:
+     g++-16 -std=c++11 -Wall -Wextra -Wpedantic -O2 -Iinclude src/main.cpp src/classfile.cpp -o jvm
+3. Executar:
+     make CXX=g++-16 exemplo
+     ./jvm --viewer build/Exemplo.class
+
+
+OUTROS ALVOS (todos os sistemas, com make)
+------------------------------------------
+  make test    7 testes automáticos (precisa de Python 3 e JDK 17)
+  make demo    compila demo/Ola.java e exibe demo/Ola.class (precisa de JDK)
+  make clean   remove objetos, executável e build/
+
+Uso: jvm --viewer arquivo.class   (no Windows: jvm.exe)

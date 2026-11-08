@@ -17,7 +17,7 @@ FUZZ_CXX ?= clang++
 FUZZ_TARGET := build/fuzz_classfile
 FUZZ_SEEDS := build/fuzz-corpus
 
-.PHONY: all clean test exemplo sanitize cppcheck fuzz-build fuzz-smoke
+.PHONY: all clean test exemplo sanitize cppcheck fuzz-build fuzz-smoke demo
 all: $(TARGET)
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
@@ -33,6 +33,9 @@ build/Exemplo.class: examples/gera_exemplo.cpp
 	mkdir -p build
 	$(CXX) $(CXXFLAGS) examples/gera_exemplo.cpp $(LDFLAGS) -o build/gera_exemplo
 	build/gera_exemplo $@
+demo: $(TARGET)
+	javac --release 8 -d demo demo/Ola.java
+	./$(TARGET) --viewer demo/Ola.class
 sanitize: CXXFLAGS += -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer
 sanitize: clean all
 cppcheck:
