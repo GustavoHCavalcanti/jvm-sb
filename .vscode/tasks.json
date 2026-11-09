@@ -1,0 +1,52 @@
+{
+  // Tasks para Windows: usam o GCC/make/python do MSYS2 UCRT64 (C:\msys64)
+  // e o JDK 17 Temurin. Rode com Ctrl+Shift+P > "Tasks: Run Task".
+  "version": "2.0.0",
+  "options": {
+    "env": {
+      "MSYSTEM": "UCRT64",
+      "CHERE_INVOKING": "1",
+      "MSYS2_PATH_TYPE": "inherit",
+      "PATH": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.21.9-hotspot\\bin;${env:PATH}"
+    }
+  },
+  "tasks": [
+    {
+      "label": "1. Compilar C++ (make)",
+      "type": "process",
+      "command": "C:\\msys64\\usr\\bin\\bash.exe",
+      "args": ["-lc", "make"],
+      "problemMatcher": ["$gcc"],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "2. Compilar Java atual para .class",
+      "type": "shell",
+      "command": "javac",
+      "args": ["--release", "8", "-d", "${fileDirname}", "${file}"],
+      "problemMatcher": []
+    },
+    {
+      "label": "3. Demo: compilar Ola.java e exibir .class",
+      "type": "process",
+      "command": "C:\\msys64\\usr\\bin\\bash.exe",
+      "args": ["-lc", "make demo"],
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "4. Rodar testes (make test)",
+      "type": "process",
+      "command": "C:\\msys64\\usr\\bin\\bash.exe",
+      "args": ["-lc", "make test"],
+      "problemMatcher": ["$gcc"],
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "Limpar (make clean)",
+      "type": "process",
+      "command": "C:\\msys64\\usr\\bin\\bash.exe",
+      "args": ["-lc", "make clean"],
+      "problemMatcher": []
+    }
+  ]
+}

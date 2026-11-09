@@ -77,7 +77,9 @@ grep -q 'Long 1234567890123' build/Cases.viewer.txt
 grep -q 'Long -42' build/Cases.viewer.txt
 grep -q 'Double 6.283185307179586' build/Cases.viewer.txt
 grep -q 'Float 0.100000001' build/Cases.viewer.txt
-grep -q 'café 😀' build/Cases.viewer.txt
+# LC_ALL=C compara bytes: o grep do MSYS2 (wchar_t de 16 bits) não casa
+# caracteres UTF-8 de 4 bytes, como o emoji, em locale UTF-8.
+LC_ALL=C grep -q 'café 😀' build/Cases.viewer.txt
 grep -q '\\u0000' build/Cases.viewer.txt
 grep -q 'interfaces_count: 1' build/Cases.viewer.txt
 grep -q 'newarray 10 // int' build/Cases.viewer.txt
